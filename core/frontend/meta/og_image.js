@@ -3,13 +3,17 @@ const getContextObject = require('./context_object.js');
 const urlUtils = require('../../shared/url-utils');
 const settingsCache = require('../../server/services/settings/cache');
 
+function getDefault() {
+    const imgUrl = settingsCache.get('og_image') || settingsCache.get('cover_image');
+    return (imgUrl && urlUtils.relativeToAbsolute(imgUrl)) || null;
+}
+
 function getOgImage(data) {
     const context = data.context ? data.context : null;
     const contextObject = getContextObject(data, context, false);
 
     if (_.includes(context, 'home')) {
-        const imgUrl = settingsCache.get('og_image') || settingsCache.get('cover_image');
-        return (imgUrl && urlUtils.relativeToAbsolute(imgUrl)) || null;
+        return getDefault();
     }
 
     if (_.includes(context, 'post') || _.includes(context, 'page') || _.includes(context, 'amp')) {
@@ -18,6 +22,8 @@ function getOgImage(data) {
         } else if (contextObject.feature_image) {
             return urlUtils.relativeToAbsolute(contextObject.feature_image);
         }
+
+        return getDefault();
     }
 
     if (_.includes(context, 'author') && contextObject.cover_image) {
